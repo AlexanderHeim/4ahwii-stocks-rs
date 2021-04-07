@@ -7,7 +7,7 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn large_fetch_daily(&self, symbol: &str) {
+    pub fn large_fetch_daily(&self, symbol: &str) -> Vec<DayData> {
         let url = format!("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&outputsize=full&symbol={}&apikey={}", symbol, self.key);
         let json = reqwest::blocking::get(&url).expect(&format!("Couldn't get json from Alphavantage! Request url: {}", &url)).text().unwrap();
         let parsed = json::parse(&json).unwrap();
@@ -20,7 +20,7 @@ impl Client {
             };
             series.push(entry);
         });
-        println!("{:#?}", series);
+        series
     }
 }
 
