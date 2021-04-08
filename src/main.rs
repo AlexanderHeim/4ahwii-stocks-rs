@@ -9,6 +9,7 @@ fn main() {
     let client = Client {
         key: String::from("asd"),
     };
-    client.large_fetch_daily("TSLA");
+    let ts = client.fetch_daily("TSLA", true);
+    println!("{:#?}", ts);
 
 }
