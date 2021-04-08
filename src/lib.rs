@@ -1,6 +1,7 @@
 use mysql::time::Date;
 use mysql_common::bigdecimal::BigDecimal;
-use std::{str::FromStr, time::Instant};
+use std::{str::FromStr};
+
 
 pub struct Client {
     pub key: String,
