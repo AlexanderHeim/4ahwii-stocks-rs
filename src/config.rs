@@ -1,15 +1,15 @@
-use std::{fs::File, io::{ErrorKind, Read}};
+use std::io::{ErrorKind, Read};
 
 use toml::Value;
 
 #[derive(Debug)]
 pub struct Config {
-    key: String,
+    pub key: String,
+    pub mysql_url: String,
 }
 
 impl Config {
     pub fn read_config() -> Self {
-        
         let mut config_file = match std::fs::File::open("config.toml") {
             Ok(config) => config,
             Err(error) => match error.kind() {
@@ -36,9 +36,15 @@ impl Config {
             Some(key) => key.as_str().unwrap(),
             None => &"asd"
         };
+
+        let mysql_url = match config_toml.get("mysql_url") {
+            Some(url) => url.as_str().unwrap(),
+            None => panic!("You need to specify a url in your config.toml! Example: mysql_url = 'mysql://root:password@localhost:3307/db_name'")
+        };
     
         Config {
             key: String::from(key),
+            mysql_url: String::from(mysql_url),
         }
     }
     
