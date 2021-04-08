@@ -10,8 +10,9 @@ fn main() {
     println!("{:#?}", config);
     let mut client = Client::from_config(&config);
 
-    let ts = client.fetch_daily("tsla", true);
-    client.update_timeseries_raw(ts);
+    let mut ts = client.fetch_daily("tsla", false);
+    Client::adjust_timeseries(&mut ts);
+    println!("{:#?}", ts);
 
     /*let client = Client {
         key: String::from("asd"),

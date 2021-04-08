@@ -1,3 +1,2 @@
 key = "asd"
-
 mysql_url = "mysql://rust:password@localhost:3306/stocks_rs"

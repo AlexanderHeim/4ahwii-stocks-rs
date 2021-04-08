@@ -1,7 +1,6 @@
 use mysql::{Pool, PooledConn, params, prelude::Queryable, time::Date};
 use mysql_common::{bigdecimal::BigDecimal};
-use std::{str::FromStr};
-
+use std::{collections::BTreeMap, ops::Mul, str::FromStr};
 use crate::config::Config;
 
 
@@ -59,7 +58,6 @@ impl Client {
 
     pub fn update_timeseries_raw(&mut self, timeseries: TimeSeriesRaw) {
         todo!("actually update, not insert");
-        println!("{}", timeseries.data[1].close.to_string());
         match self.conn.exec_batch(format!("INSERT INTO {}_raw (entry_date, close_value, split_coefficient) VALUES (:date, :close, :split_coefficient)", timeseries.name), 
             timeseries.data.iter().map(|p| params! {
                 "date" => p.date,
@@ -70,23 +68,44 @@ impl Client {
                 Err(error) => panic!("Unable to execute batch (update timeseries raw): {}", error)
             }
     }
+
+    pub fn adjust_timeseries(timeseries: &mut TimeSeriesRaw) {
+        timeseries.data.sort_by(|a, b| a.date.cmp(&b.date));
+        for i in (0..timeseries.data.len()).rev() {
+            if timeseries.data[i].split_coefficient != 1.0 {
+                for j in (0..i).rev() {
+                    timeseries.data[j].close = &timeseries.data[j].close / timeseries.data[i].split_coefficient;
+                }
+            }
+        }
+    }
+
+    fn get_splits_in_timeseries(timeseries: &TimeSeriesRaw) -> BTreeMap<Date, f32> {
+        let mut map: BTreeMap<Date, f32> = BTreeMap::new();
+        timeseries.data.iter().for_each(|x| {
+            if x.split_coefficient != 1.0 {
+                map.insert(x.date, x.split_coefficient);
+            }
+        });
+        map
+    }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, PartialOrd)]
 pub struct DayDataEx {
     pub date: Date,
     pub close: BigDecimal,
     pub close_avg200: Option<BigDecimal>,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, PartialOrd)]
 pub struct DayDataRaw {
     pub date: Date,
     pub close:  BigDecimal,
     pub split_coefficient: f32,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, PartialOrd)]
 pub struct TimeSeriesRaw {
     pub name: String,
     pub data: Vec<DayDataRaw>,
