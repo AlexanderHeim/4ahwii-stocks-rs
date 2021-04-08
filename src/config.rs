@@ -1,4 +1,4 @@
-use std::{fs::File, io::Read};
+use std::{fs::File, io::{ErrorKind, Read}};
 
 use toml::Value;
 
@@ -8,9 +8,21 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn parse_config(file: &mut File) -> Self {
+    pub fn read_config() -> Self {
+        
+        let mut config_file = match std::fs::File::open("config.toml") {
+            Ok(config) => config,
+            Err(error) => match error.kind() {
+                ErrorKind::NotFound => match std::fs::File::create("config.toml") {
+                    Ok(fc) => fc,
+                    Err(e) => panic!("Problem creating the config.toml file: {:?}", e),
+                },
+                other_error => panic!("Problem opening the config file: {:?}", other_error)
+            }
+        };
+
         let mut contents = String::new();
-        match file.read_to_string(&mut contents) {
+        match config_file.read_to_string(&mut contents) {
             Ok(_) => {}
             Err(error) => panic!("Error reading config file: {}", error)
         }
@@ -29,6 +41,5 @@ impl Config {
             key: String::from(key),
         }
     }
-
     
 }
