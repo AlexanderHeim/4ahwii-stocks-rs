@@ -12,8 +12,7 @@ fn main() {
     let mut client = Client::from_config(&config);
 
     let mut ts = client.fetch_daily("tsla", false);
-    client.update_timeseries_raw(ts);
-    client.get_raw_timeseries_between("tsla", Date::parse("2020-03-03", "%F").unwrap(), Date::parse("2021-01-01", "%F").unwrap());
+    client.update_timeseries_raw(&mut ts);
 
     /*let client = Client {
         key: String::from("asd"),

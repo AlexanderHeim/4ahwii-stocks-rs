@@ -9,3 +9,7 @@ create table if not exists tsla_raw (
     close_value decimal(11, 2) not null,
     split_coefficient decimal(4, 2) not null
 );
+
+select * from tsla_raw order by entry_date DESC;
+delete from tsla_raw where entry_date = "2021-04-08";
+drop table tsla_raw;

@@ -58,12 +58,26 @@ impl Client {
 
     pub fn update_timeseries_raw(&mut self, timeseries: &mut TimeSeriesRaw) {
         timeseries.data.sort_by(|a, b| a.date.cmp(&b.date));
+        let mut end = 0;
+        for i in 0..timeseries.data.len() {
+            let d = timeseries.data[i].date;
+            let result: Vec<(Date, String, f32)> = match self.conn.exec(format!("SELECT * FROM {}_raw WHERE entry_date = :date", timeseries.name), params! {
+                "date" => d
+            }) {
+                Ok(r) => r,
+                Err(e) => panic!("Couldn't query entry from database: {}", e),
+            };
+            if !result.is_empty() {
+                end = i;
+                break;
+            }
+        }
 
         match self.conn.exec_batch(format!("INSERT INTO {}_raw (entry_date, close_value, split_coefficient) VALUES (:date, :close, :split_coefficient)", timeseries.name), 
-            timeseries.data.iter().map(|p| params! {
-                "date" => p.date,
-                "close" => p.close.to_string(),
-                "split_coefficient" => p.split_coefficient,
+            timeseries.data.iter().rev().enumerate().filter(|&(i, _)| i <= end).map(|p| params! {
+                "date" => p.1.date,
+                "close" => p.1.close.to_string(),
+                "split_coefficient" => p.1.split_coefficient,
             })) {
                 Ok(_) => {}
                 Err(error) => panic!("Unable to execute batch (update timeseries raw): {}", error)
