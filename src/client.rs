@@ -56,8 +56,9 @@ impl Client {
         }
     }
 
-    pub fn update_timeseries_raw(&mut self, timeseries: TimeSeriesRaw) {
-        todo!("actually update, not insert");
+    pub fn update_timeseries_raw(&mut self, timeseries: &mut TimeSeriesRaw) {
+        timeseries.data.sort_by(|a, b| a.date.cmp(&b.date));
+
         match self.conn.exec_batch(format!("INSERT INTO {}_raw (entry_date, close_value, split_coefficient) VALUES (:date, :close, :split_coefficient)", timeseries.name), 
             timeseries.data.iter().map(|p| params! {
                 "date" => p.date,
@@ -67,6 +68,26 @@ impl Client {
                 Ok(_) => {}
                 Err(error) => panic!("Unable to execute batch (update timeseries raw): {}", error)
             }
+    }
+
+    pub fn get_raw_timeseries_between(&mut self, symbol: &str, start_date: &Date, end_date: &Date) -> TimeSeriesRaw {
+        let queried: Vec<(Date, String, f32)> = match self.conn.exec(format!("SELECT * FROM {}_raw WHERE entry_date >= :start_date and entry_date <= :end_date", symbol), params! { "start_date" => start_date, "end_date" => end_date }) {
+            Ok(result) => result,
+            Err(e) => panic!("Couldn't query the raw timeseries form database: {}", e),
+        };
+        let mut series: Vec<DayDataRaw> = Vec::new();
+        for i in 0..queried.len() {
+            series.push(DayDataRaw {
+                date: queried[i].0,
+                close: BigDecimal::from_str(&queried[i].1).unwrap(),
+                split_coefficient: queried[i].2,
+            })
+        }
+        println!("{:#?}", series);
+        TimeSeriesRaw {
+            name: String::from(symbol),
+            data: series,
+        }
     }
 
     pub fn adjust_timeseries(timeseries: &mut TimeSeriesRaw) {
