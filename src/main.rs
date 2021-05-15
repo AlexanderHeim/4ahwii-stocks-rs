@@ -1,17 +1,18 @@
-use client::Client;
 use config::Config;
-use mysql::time::Date;
+use crate::stock::StockRS;
 
 
 mod config;
-mod client;
+mod stockplotter;
+mod timeseries;
+mod mysql_db;
+mod alphavantage;
+mod stock;
 
 fn main() {
     let config = Config::read_config();
     println!("{:#?}", config);
-    let mut client = Client::from_config(&config);
-
-    client.update("ibm");
-    client.print_plot("ibm");
-
+    let mut stocks = StockRS::from_config(&config);
+    stocks.update_db();
+    stocks.plot();
 }
