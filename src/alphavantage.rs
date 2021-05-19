@@ -36,7 +36,7 @@ impl AlphaVantage {
                    Some(entry_json["8. split coefficient"].to_string().parse().unwrap())));
         });
         if data.is_empty() {
-            panic!("KEY INVALID!");
+            panic!("KEY INVALID OR EQUITY INVALID!");
         }
         TimeSeries {
             equity_name: String::from_str(symbol).unwrap(),
