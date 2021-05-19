@@ -1,5 +1,5 @@
 use mysql::chrono::NaiveDate;
-use plotters::{prelude::{BitMapBackend, ChartBuilder, IntoDrawingArea, LineSeries}, style::{BLUE, IntoFont, RED, WHITE}};
+use plotters::{prelude::{BitMapBackend, ChartBuilder, IntoDrawingArea, LineSeries}, style::{BLACK, GREEN, IntoFont, RED, WHITE}};
 use mysql_common::bigdecimal::ToPrimitive;
 
 use crate::{config::Config, mysql_db::Database};
@@ -45,22 +45,27 @@ impl StockPlotter {
         let path = &format!("./charts/{}/{}_{}_{}.png", symbol, symbol, self.start_date, self.end_date);
         
         let root = BitMapBackend::new(&path, (self.img_width as u32, self.img_height as u32)).into_drawing_area();
-        root.fill(&WHITE).unwrap();
+        if ts.entries.iter().last() < ts2.entries.iter().last() {
+            root.fill(&RED).unwrap();
+        } else {
+            root.fill(&GREEN).unwrap();
+        }
 
         let mut chart = ChartBuilder::on(&root)
             .caption(symbol, ("sans-serif", 50).into_font())
             .x_label_area_size(70)
             .y_label_area_size(70)
+            .margin_right(70)
             .build_cartesian_2d(self.start_date..self.end_date, 0 as f32..ts.get_max_close().to_f32().unwrap()).unwrap();
 
         chart.configure_mesh().draw().unwrap();
         chart.draw_series(LineSeries::new(
             ts.entries.iter().map(|x| (*x.0, x.1.0.to_f32().unwrap())),
-            &BLUE,
+            &BLACK,
         )).unwrap();
         chart.draw_series(LineSeries::new(
             ts2.entries.iter().map(|x| (*x.0, x.1.0.to_f32().unwrap())),
-            &RED,
+            &WHITE,
         )).unwrap();
     }
 }

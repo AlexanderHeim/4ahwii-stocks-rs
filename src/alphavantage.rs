@@ -35,7 +35,9 @@ impl AlphaVantage {
             (BigDecimal::from_str(&entry_json["4. close"].to_string()).unwrap(),
                    Some(entry_json["8. split coefficient"].to_string().parse().unwrap())));
         });
-
+        if data.is_empty() {
+            panic!("KEY INVALID!");
+        }
         TimeSeries {
             equity_name: String::from_str(symbol).unwrap(),
             entries: data,
