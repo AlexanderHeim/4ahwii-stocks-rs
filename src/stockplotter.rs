@@ -1,5 +1,5 @@
 use mysql::chrono::NaiveDate;
-use plotters::{prelude::{BitMapBackend, ChartBuilder, IntoDrawingArea, LineSeries}, style::{IntoFont, RED, WHITE}};
+use plotters::{prelude::{BitMapBackend, ChartBuilder, IntoDrawingArea, LineSeries}, style::{BLUE, IntoFont, RED, WHITE}};
 use mysql_common::bigdecimal::ToPrimitive;
 
 use crate::{config::Config, mysql_db::Database};
@@ -27,7 +27,7 @@ impl StockPlotter {
 
     pub fn plot_timeseries(&self, symbol: &str, database: &mut Database)  {
         let ts = database.get_timeseries_between(symbol, &format!("{}_adjusted", symbol), self.start_date, self.end_date);
-
+        let ts2 = database.get_timeseries_between(symbol, &format!("{}_200avg", symbol), self.start_date, self.end_date);
         match std::fs::create_dir(format!("charts")) {
             Ok(_) => {}
             Err(e) => match e.kind() {
@@ -56,6 +56,10 @@ impl StockPlotter {
         chart.configure_mesh().draw().unwrap();
         chart.draw_series(LineSeries::new(
             ts.entries.iter().map(|x| (*x.0, x.1.0.to_f32().unwrap())),
+            &BLUE,
+        )).unwrap();
+        chart.draw_series(LineSeries::new(
+            ts2.entries.iter().map(|x| (*x.0, x.1.0.to_f32().unwrap())),
             &RED,
         )).unwrap();
     }

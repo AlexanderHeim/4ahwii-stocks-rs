@@ -132,20 +132,44 @@ impl Database {
 
     pub fn get_timeseries_between(&mut self, symbol: &str, table_name: &str, start_date: NaiveDate, end_date: NaiveDate) -> TimeSeries {
 
-        let mut entries: BTreeMap<NaiveDate, (BigDecimal, Option<f32>)> = BTreeMap::new();
+        
+        if table_name.contains("200avg") {
+            let mut entries: BTreeMap<NaiveDate, (BigDecimal, Option<f32>)> = BTreeMap::new();
 
-        let result: Vec<(NaiveDate, String, Option<f32>)> = match self.conn.exec(format!("SELECT * FROM {} WHERE entry_date >= :start_date and entry_date <= :end_date", table_name), params! { "start_date" => start_date, "end_date" => end_date }) {
-            Ok(result) => result,
-            Err(e) => panic!("Couldn't query the timeseries form database: {}", e),
-        };
+            let result: Vec<(NaiveDate, String)> = match self.conn.exec(format!("SELECT * FROM {} WHERE entry_date >= :start_date and entry_date <= :end_date", table_name), params! { "start_date" => start_date, "end_date" => end_date }) {
+                Ok(result) => result,
+                Err(e) => panic!("Couldn't query the timeseries form database: {}", e),
+            };
+    
+            for i in result {
+                entries.insert(i.0, (BigDecimal::from_str(&i.1).unwrap(), None));
+            }
+    
+            TimeSeries {
+                equity_name: String::from_str(symbol).unwrap(),
+                entries,
+            }
 
-        for i in result {
-            entries.insert(i.0, (BigDecimal::from_str(&i.1).unwrap(), i.2));
+            
+        } else {
+            let mut entries: BTreeMap<NaiveDate, (BigDecimal, Option<f32>)> = BTreeMap::new();
+
+            let result: Vec<(NaiveDate, String, Option<f32>)> = match self.conn.exec(format!("SELECT * FROM {} WHERE entry_date >= :start_date and entry_date <= :end_date", table_name), params! { "start_date" => start_date, "end_date" => end_date }) {
+                Ok(result) => result,
+                Err(e) => panic!("Couldn't query the timeseries form database: {}", e),
+            };
+    
+            for i in result {
+                entries.insert(i.0, (BigDecimal::from_str(&i.1).unwrap(), i.2));
+            }
+    
+            TimeSeries {
+                equity_name: String::from_str(symbol).unwrap(),
+                entries,
+            }
         }
-
-        TimeSeries {
-            equity_name: String::from_str(symbol).unwrap(),
-            entries,
-        }
+        
     }
+
+    
 }
