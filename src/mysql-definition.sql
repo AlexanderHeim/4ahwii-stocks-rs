@@ -1,6 +1,6 @@
 create database if not exists stocks_rs;
 use stocks_rs;
-
+drop database stocks_rs;
 create user if not exists 'rust'@'localhost' identified by 'password';
 grant all on stocks_rs.* to 'rust'@'localhost';
 
@@ -20,6 +20,8 @@ insert into test1 (entry_date, close_value, split_coefficient) values ("2020-05-
 insert into test1 (entry_date, close_value, split_coefficient) values ("2020-05-01", 100, 2.0);
 insert into test1 (entry_date, close_value, split_coefficient) values ("2020-04-01", 400, 1.0);
 
+select * from tsla_raw;
+select * from tsla_adjusted;
 select * from goog_raw;
 select * from goog_adjusted;
 select * from goog_200avg;

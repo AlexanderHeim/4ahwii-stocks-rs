@@ -11,11 +11,11 @@ pub struct TimeSeries {
 
 impl TimeSeries {
     pub fn correct_splits(&mut self) {
-        for i in self.entries.clone().iter().rev().enumerate() {
-            if i.1.1.1.is_some() && i.1.1.1.unwrap() != 1.0 {
-                for j in self.entries.iter_mut().rev().take(i.0) {
-                    j.1.0 = &j.1.0 / j.1.1.unwrap();
-                }
+        for i in &self.entries.clone() {
+            if i.1.1.is_some() && i.1.1.unwrap() != 1.0 {
+                self.entries.range_mut(..i.0).for_each(|x| {
+                    x.1.0 = &x.1.0 / i.1.1.unwrap();
+                });
             }
         }
     }

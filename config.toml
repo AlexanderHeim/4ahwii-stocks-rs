@@ -1,6 +1,6 @@
 key = "asd"
 mysql_url = "mysql://rust:password@localhost:3306/stocks_rs"
 stocks = ['ibm', 'tsla']
-img_start_date = "21-01-2020"
+img_start_date = "21-01-2018"
 img_height = 720
 img_width = 1280

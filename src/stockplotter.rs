@@ -23,7 +23,7 @@ impl StockPlotter {
 
     pub fn from_config(config: &Config) -> Self {
         StockPlotter::new(config.img_width, config.img_height, config.start_date, config.end_date)
-    }
+    } 
 
     pub fn plot_timeseries(&self, symbol: &str, database: &mut Database)  {
         let ts = database.get_timeseries_between(symbol, &format!("{}_adjusted", symbol), self.start_date, self.end_date);
@@ -58,7 +58,5 @@ impl StockPlotter {
             ts.entries.iter().map(|x| (*x.0, x.1.0.to_f32().unwrap())),
             &RED,
         )).unwrap();
-        
-
     }
 }
