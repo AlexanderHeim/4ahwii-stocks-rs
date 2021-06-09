@@ -7,8 +7,8 @@ use crate::{config::Config, mysql_db::Database};
 pub struct StockPlotter {
     img_width: i32,
     img_height: i32,
-    start_date: NaiveDate,
-    end_date: NaiveDate,
+    pub start_date: NaiveDate,
+    pub end_date: NaiveDate,
 }
 
 impl StockPlotter {

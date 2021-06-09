@@ -1,6 +1,7 @@
 use std::{io::{ErrorKind, Read}, str::FromStr};
 
 use mysql::chrono::{NaiveDate, Utc};
+use mysql_common::bigdecimal::BigDecimal;
 use toml::Value;
 
 #[derive(Debug)]
@@ -12,6 +13,8 @@ pub struct Config {
     pub stocks: Vec<String>,
     pub start_date: NaiveDate,
     pub end_date: NaiveDate,
+    pub start_depot: BigDecimal,
+    pub avg200_range: f32,
 }
 
 impl Config {
@@ -78,6 +81,16 @@ impl Config {
             None => Utc::now().date().naive_utc(),
         };
 
+        let start_depot = match config_toml.get("depot") {
+            Some(end_date) => BigDecimal::from_str(end_date.as_str().unwrap()).unwrap(),
+            None => BigDecimal::from(100000),
+        };
+
+        let avg200_range = match config_toml.get("avg200_range") {
+            Some(end_date) => f32::from_str(end_date.as_str().unwrap()).unwrap(),
+            None => 0.03,
+        };
+
         Config {
             key: String::from(key),
             mysql_url: String::from(mysql_url),
@@ -86,6 +99,8 @@ impl Config {
             stocks,
             start_date,
             end_date,
+            start_depot,
+            avg200_range
         }
     }
     
